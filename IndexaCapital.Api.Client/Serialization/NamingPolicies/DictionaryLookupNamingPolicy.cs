@@ -4,10 +4,10 @@ namespace IndexaCapital.Api.Client.Serialization.NamingPolicies
 {
     public sealed class DictionaryLookupNamingPolicy : JsonNamingPolicyDecorator
     {
-        readonly Dictionary<string, string> dictionary;
+        private readonly Dictionary<string, string> _dictionary;
 
-        public DictionaryLookupNamingPolicy(Dictionary<string, string> dictionary, JsonNamingPolicy underlyingNamingPolicy) : base(underlyingNamingPolicy) => this.dictionary = dictionary ?? throw new ArgumentNullException();
+        public DictionaryLookupNamingPolicy(Dictionary<string, string> dictionary, JsonNamingPolicy underlyingNamingPolicy) : base(underlyingNamingPolicy) => _dictionary = dictionary ?? throw new ArgumentNullException();
 
-        public override string ConvertName(string name) => dictionary.TryGetValue(name, out var value) ? value : base.ConvertName(name);
+        public override string ConvertName(string name) => _dictionary.TryGetValue(name, out var value) ? value : base.ConvertName("name");
     }
 }

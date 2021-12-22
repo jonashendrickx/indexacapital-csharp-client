@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using IndexaCapital.Api.Client.Serialization.Converters;
+using System.Text.Json.Serialization;
 
 namespace IndexaCapital.Api.Client.Contracts.Users
 {
@@ -20,6 +21,7 @@ namespace IndexaCapital.Api.Client.Contracts.Users
         public string Phone { get; init; }
 
         [JsonPropertyName("document_type")]
+        [JsonConverter(typeof(CustomStringToEnumConverter))]
         public DocumentType DocumentType { get; init; }
 
         [JsonPropertyName("document")]

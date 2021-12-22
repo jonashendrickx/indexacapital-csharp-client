@@ -1,4 +1,5 @@
-﻿using IndexaCapital.Api.Client.Contracts.Users;
+﻿using IndexaCapital.Api.Client.Contracts.Questions;
+using IndexaCapital.Api.Client.Contracts.Users;
 using Moq;
 using Moq.Protected;
 using NUnit.Framework;
@@ -25,6 +26,114 @@ namespace IndexaCapital.Api.Client.Tests
             var client = new HttpClient(_httpMessageHandlerMock.Object);
             _sut = new IndexaCapitalClient(client);
         }
+
+        #region POST /questions/{product}/calculate-risk
+        [Test]
+        public async Task CalculateRiskAsync_Returns_Result()
+        {
+            // Arrange
+            var request = new CalculateRiskRequest
+            {
+                Goal = GoalType.MaximumGrowth,
+                Risk = RiskType.Emotion,
+                Experience = ExperienceType.Yes,
+                Income = 100000,
+                Age = 33,
+                Stability = StabilityType.VeryStable,
+                Expenses = ExpensesType.LessThan25Pct,
+                Wealth = 10000,
+                Horizon = HorizonType.MoreThan10Years
+            };
+            const string product = "mutual";
+            const string expectedResult = "{\"tolerance\":10,\"capacity\":10,\"total\":10}";
+
+
+            // Arrange
+            _httpMessageHandlerMock.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new StringContent(expectedResult, Encoding.UTF8, "application/json") });
+
+
+            // Act
+            var actual = await _sut.CalculateRiskAsync(product, request);
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.OK, actual.HttpStatusCode);
+            Assert.IsFalse(actual.HasErrors);
+            var result = actual.Result;
+            Assert.AreEqual(10, result.Tolerance);
+            Assert.AreEqual(10, result.Capacity);
+            Assert.AreEqual(10, result.Total);
+        }
+
+        [Test]
+        public async Task CalculateRiskAsync_Returns_Result_WhenInvalidCredentials()
+        {
+            // Arrange
+            var request = new CalculateRiskRequest
+            {
+                Goal = GoalType.MaximumGrowth,
+                Risk = RiskType.Emotion,
+                Experience = ExperienceType.Yes,
+                Income = 100000,
+                Age = 33,
+                Stability = StabilityType.VeryStable,
+                Expenses = ExpensesType.LessThan25Pct,
+                Wealth = 10000,
+                Horizon = HorizonType.MoreThan10Years
+            };
+            const string product = "mutual";
+            const string expectedResult = "{\"code\":403,\"message\":\"Invalid credentials.\"}";
+
+
+            // Arrange
+            _httpMessageHandlerMock.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.Forbidden, Content = new StringContent(expectedResult, Encoding.UTF8, "application/json") });
+
+
+            // Act
+            var actual = await _sut.CalculateRiskAsync(product, request);
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.Forbidden, actual.HttpStatusCode);
+            Assert.AreEqual("Invalid credentials.", actual.ErrorMessage);
+        }
+
+        [Test]
+        public async Task CalculateRiskAsync_Returns_Result_WhenAccountIsLocked()
+        {
+            // Arrange
+            var request = new CalculateRiskRequest
+            {
+                Goal = GoalType.MaximumGrowth,
+                Risk = RiskType.Emotion,
+                Experience = ExperienceType.Yes,
+                Income = 100000,
+                Age = 33,
+                Stability = StabilityType.VeryStable,
+                Expenses = ExpensesType.LessThan25Pct,
+                Wealth = 10000,
+                Horizon = HorizonType.MoreThan10Years
+            };
+            const string product = "mutual";
+            const string expectedResult = "{\"code\":423,\"message\":\"Account is locked\"}";
+
+
+            // Arrange
+            _httpMessageHandlerMock.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.Locked, Content = new StringContent(expectedResult, Encoding.UTF8, "application/json") });
+
+
+            // Act
+            var actual = await _sut.CalculateRiskAsync(product, request);
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.Locked, actual.HttpStatusCode);
+            Assert.AreEqual("Account is locked", actual.ErrorMessage);
+        }
+        #endregion
 
         #region GET /users/me
         [Test]

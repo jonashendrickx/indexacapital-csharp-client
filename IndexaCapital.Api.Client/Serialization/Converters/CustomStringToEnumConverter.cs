@@ -6,22 +6,22 @@ using System.Text.Json.Serialization;
 
 namespace IndexaCapital.Api.Client.Serialization.Converters
 {
-    public class CustomJsonStringEnumConverter : JsonConverterFactory
+    public class CustomStringToEnumConverter : JsonConverterFactory
     {
-        private readonly JsonNamingPolicy namingPolicy;
-        private readonly bool allowIntegerValues;
-        private readonly JsonStringEnumConverter baseConverter;
+        private readonly JsonNamingPolicy _namingPolicy;
+        private readonly bool _allowIntegerValues;
+        private readonly JsonStringEnumConverter _baseConverter;
 
-        public CustomJsonStringEnumConverter() : this(null, true) { }
+        public CustomStringToEnumConverter() : this(null, true) { }
 
-        public CustomJsonStringEnumConverter(JsonNamingPolicy namingPolicy = null, bool allowIntegerValues = true)
+        public CustomStringToEnumConverter(JsonNamingPolicy namingPolicy = null, bool allowIntegerValues = true)
         {
-            this.namingPolicy = namingPolicy;
-            this.allowIntegerValues = allowIntegerValues;
-            this.baseConverter = new JsonStringEnumConverter(namingPolicy, allowIntegerValues);
+            this._namingPolicy = namingPolicy;
+            this._allowIntegerValues = allowIntegerValues;
+            this._baseConverter = new JsonStringEnumConverter(namingPolicy, allowIntegerValues);
         }
 
-        public override bool CanConvert(Type typeToConvert) => baseConverter.CanConvert(typeToConvert);
+        public override bool CanConvert(Type typeToConvert) => _baseConverter.CanConvert(typeToConvert);
 
         public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
         {
@@ -32,11 +32,11 @@ namespace IndexaCapital.Api.Client.Serialization.Converters
             var dictionary = query.ToDictionary(p => p.Item1, p => p.Item2);
             if (dictionary.Count > 0)
             {
-                return new JsonStringEnumConverter(new DictionaryLookupNamingPolicy(dictionary, namingPolicy), allowIntegerValues).CreateConverter(typeToConvert, options);
+                return new JsonStringEnumConverter(new DictionaryLookupNamingPolicy(dictionary, _namingPolicy), _allowIntegerValues).CreateConverter(typeToConvert, options);
             }
             else
             {
-                return baseConverter.CreateConverter(typeToConvert, options);
+                return _baseConverter.CreateConverter(typeToConvert, options);
             }
         }
     }

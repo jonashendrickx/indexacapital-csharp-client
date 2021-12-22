@@ -1,5 +1,4 @@
-﻿using IndexaCapital.Api.Client.Serialization.Converters;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace IndexaCapital.Api.Client.Serialization
 {
@@ -8,11 +7,7 @@ namespace IndexaCapital.Api.Client.Serialization
         private readonly JsonSerializerOptions _options;
         public JsonSerializer()
         {
-            _options = new JsonSerializerOptions
-            {
-                Converters = { new CustomJsonStringEnumConverter() },
-                WriteIndented = true,
-            };
+            _options = new JsonSerializerOptions();
         }
 
         public string Serialize(object obj)
@@ -22,8 +17,7 @@ namespace IndexaCapital.Api.Client.Serialization
 
         public T? Deserialize<T>(string json)
         {
-            if (json == null) return default;
-            return System.Text.Json.JsonSerializer.Deserialize<T>(json, _options);
+            return string.IsNullOrEmpty(json) ? default : System.Text.Json.JsonSerializer.Deserialize<T>(json, _options);
         }
     }
 }
